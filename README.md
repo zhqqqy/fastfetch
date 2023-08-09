@@ -14,7 +14,7 @@ FastFetch is a concurrent file downloader written in Go. It splits a file into m
 To install FastFetch, you need to have Go installed on your machine, then run the following command:
 
 ```bash
-go install github.com/yourusername/fastfetch
+go install github.com/zhqqqy/fastfetch@latest
 ```
 
 ## Usage
@@ -36,7 +36,7 @@ GLOBAL OPTIONS:
    --output filename, -o filename  Output filename
    --max-connect value, -n value   Specify maximum number of connections (default: 10)
    --help, -h                      show help
-   
+
 fastfetch -o ds.zip -n=100 -u="http://example.com/file"
 ```
 ## License
