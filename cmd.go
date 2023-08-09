@@ -13,8 +13,8 @@ func main() {
 	concurrencyN := runtime.NumCPU()
 
 	app := &cli.App{
-		Name:  "downloader",
-		Usage: "File concurrency downloader",
+		Name:  "fastfetch",
+		Usage: "File concurrency download",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "url",

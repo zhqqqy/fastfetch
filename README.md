@@ -21,6 +21,22 @@ go install github.com/yourusername/fastfetch
 To use FastFetch, you can import it in your Go code:
 
 ```bash
+fastfetch -h
+NAME:
+   fastfetch - File concurrency download
+
+USAGE:
+   fastfetch [global options] command [command options] [arguments...]
+
+COMMANDS:
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --url URL, -u URL               URL to download
+   --output filename, -o filename  Output filename
+   --max-connect value, -n value   Specify maximum number of connections (default: 10)
+   --help, -h                      show help
+   
 fastfetch -o ds.zip -n=100 -u="http://example.com/file"
 ```
 ## License
