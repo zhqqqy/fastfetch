@@ -38,7 +38,7 @@ func main() {
 			strURL := c.String("url")
 			filename := c.String("output")
 			concurrency := c.Int("max-connect")
-			return NewDownloader(concurrency).Download(strURL, filename)
+			return NewDownloader(concurrency).Download(strURL, filename, concurrency)
 		},
 	}
 
