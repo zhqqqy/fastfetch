@@ -22,42 +22,42 @@ func NewDownloader(concurrency int) *Downloader {
 	return &Downloader{concurrency: concurrency}
 }
 
-func (d *Downloader) Download(url, filename string, numRoutines int) error {
+func (d *Downloader) Download(url, filename string, numRoutines int64) error {
 	file, _ := os.Create(filename)
 	length, err := getLength(url)
 	if err != nil {
 		return err
 	}
-	file.Truncate(int64(length))
+	file.Truncate(length)
 	d.setBar(length)
 	//分割任务
 	rangeSize := length / numRoutines
 
 	var wg sync.WaitGroup
 	log.Println("并发下载数: ", numRoutines)
-	for i := 0; i < numRoutines; i++ {
+	for i := 0; i < int(numRoutines); i++ {
 		wg.Add(1)
-		startRange := i * rangeSize
+		startRange := int64(i) * rangeSize
 		endRange := startRange + rangeSize
 
-		if i == numRoutines-1 {
+		if i == int(numRoutines)-1 {
 			endRange = length // 最后一片将结束字节设为文件大小
 		}
-		go func(i, start, end int) {
+		go func(start, end int64) {
 			defer wg.Done()
-			d.downloadRange(i, file, url, start, end) // 并发下载
-		}(i, startRange, endRange)
+			d.downloadRange(file, url, start, end) // 并发下载
+		}(startRange, endRange)
 	}
 	wg.Wait()
 	return nil
 }
 
-func (d *Downloader) downloadRange(i int, w *os.File, url string, startRange, endRange int) {
+func (d *Downloader) downloadRange(w *os.File, url string, startRange, endRange int64) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	rangeHeader := "bytes=" + strconv.Itoa(startRange) + "-" + strconv.Itoa(endRange-1)
+	rangeHeader := "bytes=" + fmt.Sprintf("%d-%d", startRange, endRange-1)
 	req.Header.Add("Range", rangeHeader)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -78,12 +78,12 @@ func (d *Downloader) downloadRange(i int, w *os.File, url string, startRange, en
 		}
 
 		w.WriteAt(buffer[:n], int64(startRange)) // 保存文件
-		startRange += n
+		startRange += int64(n)
 		d.bar.Add(n)
 	}
 }
-func (d *Downloader) setBar(length int) {
-	d.bar = progressbar.NewOptions(
+func (d *Downloader) setBar(length int64) {
+	d.bar = progressbar.NewOptions64(
 		length,
 		progressbar.OptionSetWriter(ansi.NewAnsiStdout()),
 		progressbar.OptionEnableColorCodes(true),
@@ -100,13 +100,13 @@ func (d *Downloader) setBar(length int) {
 	)
 }
 
-func getLength(url string) (int, error) {
+func getLength(url string) (int64, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return 0, err
 	}
+	length, err := strconv.ParseInt(resp.Header.Get("Content-Length"), 10, 64)
 
-	length, err := strconv.Atoi(resp.Header.Get("Content-Length"))
 	if err != nil {
 		return 0, err
 	}
