@@ -22,7 +22,7 @@ func NewDownloader(concurrency int) *Downloader {
 	return &Downloader{concurrency: concurrency}
 }
 
-func (d *Downloader) Download(url, filename string, numRoutines int64) error {
+func (d *Downloader) Download(url, filename string, numRoutines int) error {
 	file, _ := os.Create(filename)
 	length, err := getLength(url)
 	if err != nil {
@@ -31,16 +31,16 @@ func (d *Downloader) Download(url, filename string, numRoutines int64) error {
 	file.Truncate(length)
 	d.setBar(length)
 	//分割任务
-	rangeSize := length / numRoutines
+	rangeSize := length / int64(numRoutines)
 
 	var wg sync.WaitGroup
 	log.Println("并发下载数: ", numRoutines)
-	for i := 0; i < int(numRoutines); i++ {
+	for i := 0; i < numRoutines; i++ {
 		wg.Add(1)
 		startRange := int64(i) * rangeSize
 		endRange := startRange + rangeSize
 
-		if i == int(numRoutines)-1 {
+		if i == numRoutines-1 {
 			endRange = length // 最后一片将结束字节设为文件大小
 		}
 		go func(start, end int64) {
